@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <h1>Articulos</h1>
+
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>CODIGO</th>
+                    <th>NOMBRE</th>
+                    <th>DESCRIPCION</th>
+                    <th>CANTIDAD</th>
+                    <th>ESTADO</th>
+                    <th>ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody id="articulos">
+
+            </tbody>
+        </table>
+
+        <form>
+            <h2>EDITAR ARTICULO</h2>
+            <input id="inputCodigo" type="hidden">
+            <div>
+                <label for="inputNombre">Nombre</label>
+                <input type="text" id="inputNombre" placeholder="Ingrese Nombre">
+            </div>
+            <div>
+                <label for="inputDescripcion">Descripción</label>
+                <input type="text" id="inputDescripcion" placeholder="Ingrese Descripcion">
+            </div>          
+            <div>
+                <label for="inputCantidad">Cantidad</label>
+                <input type="text" id="inputCantidad" placeholder="Ingrese Cantidad">
+            </div>
+            <div>
+                <label for="inputHabilitar">Habilitar</label>
+                <input type="text" id="inputHabilitar" placeholder="Habilitar">
+            </div>           
+
+            <div>
+                <button type="button" onclick="editarArticulo()">GUARDAR</button>
+            </div>
+        </form>
+
+
+
+        <form>
+            <h2>CREAR ARTICULO</h2>
+            <input id="inputCodigo" type="hidden">
+            <div>
+                <label for="inputNombre">Nombre</label>
+                <input type="text" id="insertNombre" placeholder="Ingrese Nombre">
+            </div>
+            <div>
+                <label for="inputDescripcion">Descripción</label>
+                <input type="text" id="insertDescripcion" placeholder="Ingrese Descripcion">
+            </div>          
+            <div>
+                <label for="inputCantidad">Cantidad</label>
+                <input type="text" id="insertCantidad" placeholder="Ingrese Cantidad">
+            </div>
+            <div>
+                <label for="inputHabilitar">Habilitar</label>
+                <input type="text" id="insertHabilitar" placeholder="Habilitar">
+            </div>           
+
+            <div>
+                <button type="button" onclick="insertarArticulo()">GUARDAR</button>
+            </div>
+        </form>
+
+        <script
+            src="https://code.jquery.com/jquery-3.4.1.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+
+        <script>
+
+                    listarArticulo()
+
+                    function listarArticulo() {
+                        $.ajax({
+                            url: 'http://localhost:8080/AppArticulo/articulo',
+                            type: 'GET',
+                            success: function (data) {
+                                var htmlgenerado = ''
+
+                                data.forEach(articulo => {
+                                    var botonEstado = ''
+                                    //Cliente es 'N' 'Habilitar'
+                                    if (articulo.habilitar == 'Y') {
+                                        botonEstado = `
+                                        <button onclick="cambiarEstado('N','${articulo.codigo}')">Inhabilitar</button>
+                                        `
+                                     } else {
+                                        botonEstado = `
+                                        <button onclick="cambiarEstado('Y','${articulo.codigo}')">Habilitar</button>
+                                        `                      
+                                     }
+                                         
+                                    //Cliente es 'Y' 'Deshabilitar'
+
+
+                                    htmlgenerado += `
+                    <tr>
+                        <td>${articulo.codigo}</td>
+                        <td>${articulo.nombre}</td>
+                        <td>${articulo.descripcion}</td>
+                        <td>${articulo.cantidad}</td>
+                        <td>${articulo.habilitar}</td>
+                        <td>
+                        <button onclick="obtenerDetalleArticulo('${articulo.codigo}')">Detalle</button>
+                        ${botonEstado}
+                        </td>
+                    </tr>
+                `
+                                })
+
+                                var tbody = document.getElementById('articulos')
+                                tbody.innerHTML = htmlgenerado
+                            }
+                        })
+                    }
+
+
+                    function obtenerDetalleArticulo(myCodigo) {
+                        //console.log(myCodigo)    
+                        $.ajax({
+                            url: `http://localhost:8080/AppArticulo/articulo?codigo=${myCodigo}`,
+                            type: 'GET',
+                            success: function (myRes) {
+                                //console.log(myRes)
+                                var myInputCodigo = document.getElementById('inputCodigo')
+                                var myInputNombre = document.getElementById('inputNombre')
+                                var myInputDescripcion = document.getElementById('inputDescripcion')
+                                var myInputCantidad = document.getElementById('inputCantidad')
+                                var myInputHabilitar = document.getElementById('inputHabilitar')
+                                myInputNombre.value = myRes.nombre
+                                myInputDescripcion.value = myRes.descripcion
+                                myInputCantidad.value = myRes.cantidad
+                                myInputCodigo.value = myRes.codigo
+                                myInputHabilitar.value = myRes.habilitar
+
+                            }
+                        })
+
+                    }
+
+                    function editarArticulo() {
+                        var myInputCodigo = document.getElementById('inputCodigo')
+                        var myInputNombre = document.getElementById('inputNombre')
+                        var myInputDescripcion = document.getElementById('inputDescripcion')
+                        var myInputCantidad = document.getElementById('inputCantidad')
+                        var myInputHabilitar = document.getElementById('inputHabilitar')
+
+                        $.ajax({
+                            url: 'http://localhost:8080/AppArticulo/articulo',
+                            data: JSON.stringify(
+                                    {
+                                        codigo: myInputCodigo.value,
+                                        nombre: myInputNombre.value,
+                                        descripcion: myInputDescripcion.value,
+                                        cantidad: myInputCantidad.value,
+                                        habilitar: myInputHabilitar.value
+                                    }
+                            ),
+                            type: 'PUT',
+                            datatype: 'JSON',
+                            success: function (myRes) {
+                                //console.log(myRes)
+                                listarArticulo()
+                                limpiarFormularioEditar()
+
+                            }
+
+                        })
+                    }
+
+                    function limpiarFormularioEditar(){
+                        var myInputNombre = document.getElementById('inputNombre')
+                        var myInputDescripcion = document.getElementById('inputDescripcion')
+                        var myInputCantidad = document.getElementById('inputCantidad')
+                        var myInputHabilitar = document.getElementById('inputHabilitar')
+                        myInputNombre.value = ''
+                        myInputDescripcion.value = ''
+                        myInputCantidad.value = ''
+                        myInputHabilitar.value = ''
+                    }
+
+
+                    function insertarArticulo() {
+                        var myInsertNombre = document.getElementById('insertNombre')
+                        var myInsertDescripcion = document.getElementById('insertDescripcion')
+                        var myInsertCantidad = document.getElementById('insertCantidad')
+                        var myInsertHabilitar = document.getElementById('insertHabilitar')
+
+                        $.ajax({
+                            url: 'http://localhost:8080/AppArticulo/articulo',
+                            data: JSON.stringify(
+                                    {
+
+                                        nombre: myInsertNombre.value,
+                                        descripcion: myInsertDescripcion.value,
+                                        cantidad: myInsertCantidad.value,
+                                        habilitar: myInsertHabilitar.value
+                                    }),
+                            type: 'POST',
+                            datatype: 'JSON',
+                            success: function (myRes) {
+                                //console.log(myRes)
+                                listarArticulo()
+                            }
+                        })
+                    }
+
+
+                    function cambiarEstado(myEstado, myId){
+                        $.ajax({
+                            url:`http://localhost:8080/AppArticulo/articulo?codigo=${myId}&estado=${myEstado}`,
+                            type:'DELETE',
+                            success: function(){
+                                listarArticulo()
+                            }        
+                        })
+                    }
+        </script>
+    </body>
+</html>
